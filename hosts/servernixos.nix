@@ -7,18 +7,20 @@
   nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-
-  imports =
-  [ 
-    ./hardware-servernixos.nix
-  ];
-
   home-manager = 
   {
     useGlobalPkgs = true;
     useUserPackages = true;
+    users.servernixos = {
+      imports = [ ./users/servernixos.nix ];
+    };
   };
 
+  users.users.servernixos = 
+  {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "dialout" ];
+  };
 
   boot = 
   {

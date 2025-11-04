@@ -19,7 +19,7 @@
       [
         home-manager.nixosModules.home-manager
         ./hosts/servernixos.nix
-        ./users/servernixos.nix      
+        ./hosts/hardware-servernixos.nix
       ];
     };
   };
