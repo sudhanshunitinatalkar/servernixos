@@ -56,21 +56,24 @@
 
     cloudflared.enable = true;
 
-    postgresql.enable = true;
-
-    thingsboard = 
+    postgresql = 
     {
-      enable = true;
       ensureUsers = 
       [{
         name = "thingsboard";
-        passwordFile = "/etc/nixos/secrets/thingsboard.pass";
+        passwordFile = cfg.dbPasswordFile;
       }];
       ensureDatabases = 
       [{
         name = "thingsboard";
         owner = "thingsboard";
       }];
+    };
+
+    thingsboard = 
+    {
+      enable = true;
+      dbPasswordFile = "/etc/nixos/secrets/thingsboard.pass";
     };    
   };
 
