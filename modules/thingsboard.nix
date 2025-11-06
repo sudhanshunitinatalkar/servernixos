@@ -63,29 +63,39 @@ in
         };
 
         # This script now contains all the logic from your nix.md
-        script = ''
-          # Wait for the database to be ready
-          until sudo -u postgres psql -c "select 1" >/dev/null 2>&1; do
+        script = 
+        ''
+          set -e  # Exit immediately if a command exits with a non-zero status.
+          set -x  # Print commands and their arguments as they are executed.
+
+          # Wait for the database to be ready (run as postgres user)
+          until sudo -u postgres psql -c "select 1" >/dev/null 2>&1;
+          do
             echo "Waiting for PostgreSQL..."
             sleep 1
           done
 
-          echo "Ensuring database user 'thingsboard' exists..."
-          # Create user if it doesn't exist
-          sudo -u postgres psql -c "CREATE USER thingsboard" 2>/dev/null || echo "User already exists."
-
-          echo "Ensuring database 'thingsboard' exists..."
-          # Create DB if it doesn't exist
-          sudo -u postgres psql -c "CREATE DATABASE thingsboard OWNER thingsboard" 2>/dev/null || echo "Database already exists."
-
-          echo "Setting 'thingsboard' user password..."
           # Read the password from the secret file
           DB_PASSWORD=$(cat ${cfg.dbPasswordFile})
-          # Set the password
-          sudo -u postgres psql -c "ALTER USER thingsboard WITH PASSWORD '$DB_PASSWORD';"
 
-          # Check if the 'device' table exists.
-          if sudo -u thingsboard psql -d thingsboard -c '\dt device' | grep -q 'device'; then
+          echo "Ensuring database user 'thingsboard' exists..."
+          # Create user if it doesn't exist (run as postgres user)
+          sudo -u postgres psql -c "CREATE USER thingsboard" 2>/dev/null || echo "User already exists."
+
+          echo "Setting 'thingsboard' user password..."
+          # Set the password using "dollar-quoting" to handle any special characters
+          sudo -u postgres psql -c "ALTER USER thingsboard WITH PASSWORD $password$$DB_PASSWORD$password$;"
+
+          echo "Ensuring database 'thingsboard' exists..."
+          # Create DB if it doesn't exist (run as postgres user)
+          sudo -u postgres psql -c "CREATE DATABASE thingsboard OWNER thingsboard" 2>/dev/null || echo "Database already exists."
+
+          echo "Granting privileges..."
+          # Grant privileges to the user for the database
+          sudo -u postgres psql -d thingsboard -c "GRANT ALL PRIVILEGES ON DATABASE thingsboard TO thingsboard;"
+
+          # Check if the 'device' table exists (run as postgres user)
+          if sudo -u postgres psql -d thingsboard -c '\dt device' 2>/dev/null | grep -q 'device'; then
             echo "ThingsBoard schema already exists. Skipping installation."
           else
             echo "Running ThingsBoard schema installation..."
@@ -93,6 +103,7 @@ in
             chown thingsboard:thingsboard /var/lib/thingsboard/data
 
             # Run the installer as the 'thingsboard' user
+            # This will now connect using the password we set
             sudo -u thingsboard \
               ${pkgs.openjdk17}/bin/java \
                 -cp ${thingsboardJar} \
@@ -101,6 +112,7 @@ in
                 -Dinstall.load_demo=true \
                 org.springframework.boot.loader.launch.PropertiesLauncher
           fi
+          echo "ThingsBoard schema script finished."
         '';
 
         # Environment variables for the Java installer
