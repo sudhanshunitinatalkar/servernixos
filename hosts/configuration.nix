@@ -55,8 +55,17 @@
     openssh.enable = true;
 
     cloudflared.enable = true;
-    postgresql.enable = true;
     
+    postgresql = 
+    {
+      enable = true;
+      package = pkgs.postgresql_16.withPackages 
+      (p: 
+        [
+          p.timescaledb_toolkit
+        ]
+      );    
+    };
   };
 
   environment.systemPackages = with pkgs; 

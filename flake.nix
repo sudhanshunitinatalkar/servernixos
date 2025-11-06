@@ -19,7 +19,8 @@
       [
         home-manager.nixosModules.home-manager
         ./hosts/configuration.nix
-        ./hosts/hardware-configuration.nix      
+        ./hosts/hardware-configuration.nix
+        ./modules/thingsboard.nix     
       ];
     };
   };
