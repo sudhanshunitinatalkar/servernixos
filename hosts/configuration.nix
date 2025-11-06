@@ -58,6 +58,7 @@
 
     postgresql = 
     {
+      enable = true;
       ensureUsers = 
       [{
         name = "thingsboard";
