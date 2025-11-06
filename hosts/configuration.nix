@@ -37,7 +37,7 @@
 
   networking = 
   {
-    hostName = "servernixos";
+    hostName = "pbrserver";
     networkmanager.enable = true;
     firewall.enable = false;
     # firewall.allowedTCPPorts = [ ];
