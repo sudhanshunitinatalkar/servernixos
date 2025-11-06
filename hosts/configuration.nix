@@ -73,6 +73,7 @@
     thingsboard = 
     {
       enable = true;
+      dbPasswordFile = "/etc/nixos/secrets/thingsboard.pass";
     };    
   };
 
