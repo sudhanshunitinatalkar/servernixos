@@ -63,8 +63,7 @@ in
         };
 
         # This script now contains all the logic from your nix.md
-        script = 
-        ''
+        script = ''
           set -e  # Exit immediately if a command exits with a non-zero status.
           set -x  # Print commands and their arguments as they are executed.
 
@@ -83,9 +82,9 @@ in
           sudo -u postgres psql -c "CREATE USER thingsboard" 2>/dev/null || echo "User already exists."
 
           echo "Setting 'thingsboard' user password..."
-          # Set the password using "dollar-quoting" to handle any special characters
           # Set the password using dollar-quoting, escaping the $ for the shell
           sudo -u postgres psql -c "ALTER USER thingsboard WITH PASSWORD \$password\$$DB_PASSWORD\$password\$;"
+
           echo "Ensuring database 'thingsboard' exists..."
           # Create DB if it doesn't exist (run as postgres user)
           sudo -u postgres psql -c "CREATE DATABASE thingsboard OWNER thingsboard" 2>/dev/null || echo "Database already exists."
@@ -94,16 +93,23 @@ in
           # Grant privileges to the user for the database
           sudo -u postgres psql -d thingsboard -c "GRANT ALL PRIVILEGES ON DATABASE thingsboard TO thingsboard;"
 
+          # --- NEW ---
+          echo "Temporarily granting SUPERUSER rights for installation..."
+          sudo -u postgres psql -c "ALTER USER thingsboard WITH SUPERUSER;"
+
           # Check if the 'device' table exists (run as postgres user)
           if sudo -u postgres psql -d thingsboard -c '\dt device' 2>/dev/null | grep -q 'device'; then
             echo "ThingsBoard schema already exists. Skipping installation."
+            # Revoke SUPERUSER rights if we skip
+            echo "Revoking SUPERUSER rights..."
+            sudo -u postgres psql -c "ALTER USER thingsboard WITH NOSUPERUSER;"
           else
             echo "Running ThingsBoard schema installation..."
             mkdir -p /var/lib/thingsboard/data
             chown thingsboard:thingsboard /var/lib/thingsboard/data
 
             # Run the installer as the 'thingsboard' user
-            # This will now connect using the password we set
+            # It now has SUPERUSER rights to do this
             sudo -u thingsboard \
               ${pkgs.openjdk17}/bin/java \
                 -cp ${thingsboardJar} \
@@ -111,6 +117,10 @@ in
                 -Dinstall.data_dir=/var/lib/thingsboard/data \
                 -Dinstall.load_demo=true \
                 org.springframework.boot.loader.launch.PropertiesLauncher
+            
+            # --- NEW ---
+            echo "Installation complete. Revoking SUPERUSER rights..."
+            sudo -u postgres psql -c "ALTER USER thingsboard WITH NOSUPERUSER;"
           fi
           echo "ThingsBoard schema script finished."
         '';
