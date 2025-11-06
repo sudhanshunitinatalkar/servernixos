@@ -54,7 +54,13 @@
     libinput.enable = true;
     openssh.enable = true;
 
-    cloudflared.enable = true;    
+    cloudflared.enable = true;
+
+    thingsboard = 
+    {
+      enable = true;
+      dbPasswordFile = "/etc/nixos/secrets/thingsboard.pass";
+    };    
   };
 
   environment.systemPackages = with pkgs; 
