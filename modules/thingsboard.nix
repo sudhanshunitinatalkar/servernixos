@@ -12,7 +12,7 @@ let
   thingsboardJar = pkgs.fetchurl 
   {
     url = "https://github.com/sudhanshunitinatalkar/thingsboard/releases/download/v4.2/thingsboard-4.2.1-boot.jar";
-    sha256 = "0000000000000000000000000000000000000000000000000000"; # <-- REPLACE THIS after first build
+    sha256 = "5qzyiRlZ7xco0h0zh8+mE03W4ak1pKcg5OIzlyQDz3c"; # <-- REPLACE THIS after first build
   };
 
 in
