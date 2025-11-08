@@ -56,28 +56,20 @@
 
     cloudflared.enable = true;
 
-    postgresql = 
-    {
+    postgresql = {
       enable = true;
-
-      authentication = 
-      ''
-        # These lines are required for NixOS's own scripts
-        local all postgres peer
-        local all all      peer
-        
-        # These lines allow ThingsBoard to connect with a password
-        local all all md5
-        host  all all 127.0.0.1/32 md5
-        host  all all ::1/128      md5
+      # Ensure standard authentication methods are set:
+      # - 'local all all peer': Allows users to connect via socket if their OS username matches the DB username.
+      # - 'host all all 127.0.0.1/32 scram-sha-256': Requires password for TCP connections (used by ThingsBoard).
+      authentication = pkgs.lib.mkOverride 10 ''
+        #type database  DBuser  auth-method
+        local all       all     peer
+        host  all       all     127.0.0.1/32   scram-sha-256
+        host  all       all     ::1/128        scram-sha-256
       '';
     };
 
-    thingsboard = 
-    {
-      enable = true;
-      dbPasswordFile = "/etc/nixos/secrets/thingsboard.pass";
-    };    
+    
   };
 
   environment.systemPackages = with pkgs; 
