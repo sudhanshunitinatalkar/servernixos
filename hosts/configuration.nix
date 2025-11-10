@@ -72,7 +72,7 @@
       enable = true;
       tunnels = {
         "70d40540-2e65-4354-ba69-6d7ac6484a0e" = {
-          credentialsFile = "/home/pbrserver/.config/cloudflared/70d40540-2e65-4354-ba69-6d7ac6484a0e.json";
+          credentialsFile = "/home/pbrserver/.cloudflared/70d40540-2e65-4354-ba69-6d7ac6484a0e.json";
           ingress = {
             "iot.eltros.in" = "http://localhost:8080";
             "mqtt.eltros.in" = "tcp://localhost:1883";
